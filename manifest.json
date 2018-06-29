@@ -1,0 +1,22 @@
+{
+  "name": "Oleg Chirukhin",
+  "version": "1.0",
+  "manifest_version": 2,
+  "permissions": [ "activeTab","tabs", "webNavigation", "<all_urls>",  "http://*/", "https://*/", "*://*/*",
+    "alarms", "audio", "audioCapture", "background", "browser", "certificateProvider", "clipboard", "clipboardRead", "clipboardWrite", "contextMenus", "desktopCapture", "diagnostics", "displaySource", "dns", "documentScan", "enterprise.deviceAttributes", "enterprise.platformKeys", "experimental", "fileBrowserHandler", "fileSystem", "fileSystemProvider", "gcm", "geolocation", "hid", "identity", "idle", "mdns", "mediaGalleries", "nativeMessaging", "networking.config", "networking.onc", "notifications", "platformKeys", "pointerLock", "power", "printerProvider", "proxy", "serial", "signedInDevices", "storage", "syncFileSystem", "system.cpu", "system.display", "system.memory", "system.network", "system.storage", "tts", "unlimitedStorage", "usb", "videoCapture", "virtualKeyboard", "vpnProvider", "wallpaper", "webview" ],
+  "description": "Autopause YouTube Videos",
+  "background": {
+    "persistent": true,
+    "scripts": [ "jquery-3.3.1.js", "background.js" ]
+  },
+  "content_scripts": [
+    {
+      "matches": [ "*://*/*" ],
+      "js": [ "jquery-3.3.1.min.js", "content.js" ],
+      "run_at": "document_end",
+      "all_frames": false
+    }
+  ],
+  "web_accessible_resources": [ "content.js" ],
+  "content_security_policy": "script-src 'self' 'unsafe-eval'; script-src 'self' https://ajax.googleapis.com; object-src 'self'"
+}

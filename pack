@@ -1,0 +1,7 @@
+#!/bin/bash
+
+#https://stackoverflow.com/questions/3196615/how-to-create-chrome-crx-file-programmatically-preferably-in-java
+
+#https://stackoverflow.com/questions/3196615/how-to-create-chrome-crx-file-programmatically-preferably-in-java
+
+chrome.exe --no-message-box --pack-extension=./
