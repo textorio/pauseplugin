@@ -67,23 +67,10 @@ function downloadDataURI (wnd, dataURI, name, useBlob) {
     return blob;
 }
 
-//https://github.com/Eloston/disable-html5-autoplay/issues/209
-//https://stackoverflow.com/questions/31116220/control-youtube-player-from-a-chrome-extension
-//https://stackoverflow.com/questions/23530399/chrome-web-driver-download-files
-//https://github.com/shahankit/youtube-playback-control
-window.main = function () {
-    console.log("main");
+var makeScreenshot = function(time) {
+    console.log("impl-script: making screenshot");
 
     var video = document.getElementsByTagName("video")[0];
-
-    video.pause();
-    function go () {
-        if (!video.paused) {
-            video.pause();
-        }
-        setTimeout(go, 500);
-    }
-    go();
 
     var screenshotOK = false;
     video.addEventListener("playing", function() {
@@ -91,28 +78,88 @@ window.main = function () {
         video.pause();
         lastresult = downloadYouTubeScreenshot(window, "youtube-screenshot.jpg", true);
         console.log("screenshot recorded");
-        window.dispatchEvent(new CustomEvent("screenshotOK", {}));
     }, true);
 
-    console.log("before seeking time");
-    video.currentTime = 1000;
-    console.log("after seeking time");
-
-    console.log("before play");
+    video.currentTime = time;
     video.play();
 
-    function go () {
-        if (screenshotOK) {
-            return true;
+    console.log("impl-script: making screenshot finished");
+};
+
+var setVideoQuality = function(quality) {
+    var node = document.querySelector('[title="Настройки"]');
+
+    function eventFire(el, etype){
+        if (el.fireEvent) {
+            el.fireEvent('on' + etype);
         } else {
-            if (!video.playing) {
-                video.play();
-            } else {
+            var evObj = document.createEvent('Events');
+            evObj.initEvent(etype, true, false);
+            el.dispatchEvent(evObj);
+        }
+    }
+
+    eventFire(node, 'click');
+
+    var divRef;
+    var spans = document.getElementsByTagName("div");
+    var spanContainer;
+    for(var i = 0; i < spans.length; i++){
+        if(spans[i].innerHtml == "Настройки"){
+            spanContainer = spans[i].parentNode;
+            break;
+        }
+    }
+    console.log(spanContainer);
+
+
+
+    var divRef;
+    var spans = document.getElementsByTagName("span");
+    var spanContainer;
+    for(var i = 0; i < spans.length; i++){
+        if(spans[i].innerText === "Автонастройка"){
+            spanContainer = spans[i].parentNode;
+            break;
+        }
+    }
+    console.log(spanContainer);
+    eventFire(spanContainer, 'click');
+
+    var spanHQ;
+    function go () {
+        var divRef;
+        var spans = document.getElementsByTagName("span");
+
+        for(var i = 0; i < spans.length; i++){
+            if(spans[i].innerHTML.includes(quality)){
+                spanHQ = spans[i];
+                break;
             }
+        }
+
+        if (undefined !== spanHQ) {
+            console.log(spanHQ);
+            eventFire(spanHQ.parentElement.parentElement, 'click');
+        } else {
+            console.log("still waiting our span");
             setTimeout(go, 500);
         }
     }
     go();
+
+
+};
+
+
+window.main = function () {
+    console.log("main");
+    var video = document.getElementsByTagName("video")[0];
+    video.pause();
+    video.addEventListener("canplay", function() {
+        video.pause();
+    }, true);
+    setVideoQuality("1080p");
 };
 
 function eventFire(el, etype){
@@ -130,6 +177,17 @@ window.addEventListener('lastresult', function(evt) {
     var request = evt.detail;
     var response = {requestId: request.id, data: lastresult};
     window.dispatchEvent(new CustomEvent("lastresult_data", {detail: response}));
+});
+
+window.addEventListener('make_screenshot', function(evt) {
+    console.log("content-script: make screenshot event catched");
+    var request = evt.detail;
+
+    makeScreenshot(request.time);
+
+    var response = {requestId: request.id, data: true};
+    window.dispatchEvent(new CustomEvent("make_screenshot_data", {detail: response}));
+    console.log("content-script: make screenshot event replied");
 });
 
 window.addEventListener("message", function (event) {
