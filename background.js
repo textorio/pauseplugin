@@ -2,7 +2,7 @@ function video(doc) {
     console.log("Main function");
 
     //https://stackoverflow.com/questions/31116220/control-youtube-player-from-a-chrome-extension
-
+    //
     let video = $(doc).find(".html5-main-video").first();
     console.log(video);
     console.log(doc);

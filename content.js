@@ -4,14 +4,14 @@ var lastresult = undefined;
 
 var downloadYouTubeScreenshot = function(wnd, name, useBlob) {
     return downloadVideoScreenshot(wnd, getYouTubeVideo(wnd), name, useBlob);
-}
+};
 
 var getYouTubeVideo = function(wnd) {
     var video = wnd.document.getElementsByClassName("html5-main-video")[0];
     video.videoHeight;
     video.videoWidth;
     return video;
-}
+};
 
 var downloadVideoScreenshot = function(wnd, video, name, useBlob) {
     var canvas = wnd.document.createElement('canvas');
@@ -23,7 +23,7 @@ var downloadVideoScreenshot = function(wnd, video, name, useBlob) {
     var dataURI = canvas.toDataURL('image/jpeg');
 
     return downloadDataURI(wnd, dataURI, name, useBlob);
-}
+};
 
 var dataURIToBlob = function(wnd, dataURI, mimetype) {
     var BASE64_MARKER = ';base64,';
@@ -75,19 +75,55 @@ window.main = function () {
     console.log("main");
 
     var video = document.getElementsByTagName("video")[0];
-    video.currentTime = 100;
-    video.addEventListener("playing", function() {
-        lastresult = downloadYouTubeScreenshot(window, "youtube-screenshot.jpg", true);
-    }, true);
 
+    video.pause();
     function go () {
         if (!video.paused) {
             video.pause();
         }
-        setTimeout(go, 100); // cavideo.currentTime = 200;llback
+        setTimeout(go, 500);
+    }
+    go();
+
+    var screenshotOK = false;
+    video.addEventListener("playing", function() {
+        screenshotOK = true;
+        video.pause();
+        lastresult = downloadYouTubeScreenshot(window, "youtube-screenshot.jpg", true);
+        console.log("screenshot recorded");
+        window.dispatchEvent(new CustomEvent("screenshotOK", {}));
+    }, true);
+
+    console.log("before seeking time");
+    video.currentTime = 1000;
+    console.log("after seeking time");
+
+    console.log("before play");
+    video.play();
+
+    function go () {
+        if (screenshotOK) {
+            return true;
+        } else {
+            if (!video.playing) {
+                video.play();
+            } else {
+            }
+            setTimeout(go, 500);
+        }
     }
     go();
 };
+
+function eventFire(el, etype){
+    if (el.fireEvent) {
+        el.fireEvent('on' + etype);
+    } else {
+        var evObj = document.createEvent('Events');
+        evObj.initEvent(etype, true, false);
+        el.dispatchEvent(evObj);
+    }
+}
 
 window.addEventListener('lastresult', function(evt) {
     //console.log(lastresult);
